@@ -10,7 +10,6 @@ export default {
 
     // Preserve valid fallbacks and syntax needed by the supported browsers.
     "property-no-vendor-prefix": null,
-    "property-no-deprecated": ["warning"],
     "color-function-notation": null,
     "color-function-alias-notation": null,
     "alpha-value-notation": null,
