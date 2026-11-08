@@ -22,6 +22,7 @@ export default defineConfig([
         {
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
         },
       ],
     },
@@ -36,6 +37,14 @@ export default defineConfig([
     rules: {
       "html/no-duplicate-class": "error",
       "html/require-img-alt": "error",
+
+      // Keep structural/accessibility rules, but do not force reformatting
+      // of the existing hand-maintained HTML during the first baseline.
+      "html/indent": "off",
+      "html/element-newline": "off",
+      "html/attrs-newline": "off",
+      "html/require-closing-tags": "off",
+      "html/use-baseline": "off",
     },
   },
 ]);
