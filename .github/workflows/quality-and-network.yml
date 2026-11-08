@@ -1,9 +1,6 @@
 name: Quality and Render diagnostics
 
 on:
-  push:
-    branches:
-      - quality-tooling/bootstrap
   pull_request:
     branches:
       - main
