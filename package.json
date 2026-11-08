@@ -1,0 +1,26 @@
+{
+  "name": "radmehr-group-quality-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "lint:js": "eslint \"js/**/*.js\"",
+    "lint:html": "eslint \"index.html\" \"html/**/*.html\"",
+    "lint:css": "stylelint \"css/**/*.css\"",
+    "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
+    "lhci": "lhci autorun"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@html-eslint/eslint-plugin": "0.67.0",
+    "@html-eslint/parser": "0.67.0",
+    "@lhci/cli": "0.16.0",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "stylelint": "18.0.0",
+    "stylelint-config-standard": "41.0.0"
+  }
+}
