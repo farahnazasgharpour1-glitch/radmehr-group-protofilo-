@@ -32,8 +32,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Audit development dependencies
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: npm audit
 
       - name: Lint JavaScript
         run: npm run lint:js
@@ -45,7 +44,7 @@ jobs:
         run: npm run lint:css
 
       - name: Save generated lockfile for review
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: radmehr-quality-package-lock
           path: package-lock.json
