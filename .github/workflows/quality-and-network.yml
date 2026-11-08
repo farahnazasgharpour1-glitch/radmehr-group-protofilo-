@@ -1,0 +1,112 @@
+name: Quality and Render diagnostics
+
+on:
+  push:
+    branches:
+      - quality-tooling/bootstrap
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  code-lint:
+    name: JavaScript, HTML and CSS lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Resolve development dependencies
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install development dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Lint JavaScript
+        run: npm run lint:js
+        continue-on-error: true
+
+      - name: Lint HTML
+        run: npm run lint:html
+        continue-on-error: true
+
+      - name: Lint CSS
+        run: npm run lint:css
+        continue-on-error: true
+
+      - name: Save generated lockfile for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: radmehr-quality-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse CI on local static pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install development dependencies
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run Lighthouse CI
+        run: npm run lhci
+        continue-on-error: true
+
+  render-dns:
+    name: Check Render DNS and HTTPS from GitHub's network
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare DNS answers from the GitHub runner
+        shell: bash
+        run: |
+          set +e
+          echo "=== System resolver: onrender.com ==="
+          getent ahosts onrender.com
+          echo "system_onrender_exit=$?"
+
+          echo "=== System resolver: preview hostname ==="
+          getent ahosts radmehr-group-v2-preview.onrender.com
+          echo "system_preview_exit=$?"
+
+          echo "=== Google DNS-over-HTTPS: onrender.com ==="
+          curl -sS --max-time 20 'https://dns.google/resolve?name=onrender.com&type=A'
+          echo
+          echo "=== Google DNS-over-HTTPS: preview hostname ==="
+          curl -sS --max-time 20 'https://dns.google/resolve?name=radmehr-group-v2-preview.onrender.com&type=A'
+          echo
+
+      - name: Check HTTPS response from Render
+        shell: bash
+        run: |
+          set +e
+          curl -sS -L --max-time 45 -o /tmp/radmehr-preview.html \
+            -w 'preview_http_status=%{http_code} total_seconds=%{time_total} remote_ip=%{remote_ip}\n' \
+            'https://radmehr-group-v2-preview.onrender.com/'
+          CURL_EXIT=$?
+          echo "preview_curl_exit=$CURL_EXIT"
+          if [ -f /tmp/radmehr-preview.html ]; then
+            echo "preview_html_bytes=$(wc -c < /tmp/radmehr-preview.html)"
+            head -c 300 /tmp/radmehr-preview.html
+            echo
+          fi
+          exit 0
